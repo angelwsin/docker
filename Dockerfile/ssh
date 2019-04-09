@@ -1,0 +1,7 @@
+本地
+ssh-keygen 生成秘钥
+
+在$HOME/.ssh/目录下，会新生成两个文件：id_rsa.pub和id_rsa。前者是你的公钥，后者是你的私钥。
+
+
+公钥送到远程主机 ssh-copy-id user@host

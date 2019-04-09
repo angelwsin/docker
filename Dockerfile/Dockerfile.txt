@@ -1,0 +1,201 @@
+docker build
+
+  创建image 使用的脚本
+Usage
+  docker build  PATH/URL
+                PATH  文件系统路径
+                URL   Git repository location
+
+
+  默认查找 Dockerfile 文件
+  -f  可以指定自定义的文件
+
+  Format 格式
+  1）Docker runs instructions in a Dockerfile in order 顺序执行
+  2）A Dockerfile must start with a `FROM` instruction  必须于FROM指令开头 Base Image基础镜像
+  3）FROM may only be preceded by one or more ARG instructions, which declare arguments that are used in FROM lines in the Dockerfile
+     在FROM之前可以声明ARG参数 并且ARG参数声明只能用在FROM指令上
+  4）begin with # as a comment 行开头# 是注释
+
+
+
+
+  Parser directives
+
+  syntax
+    # syntax=[remote image reference]
+
+  Official releases
+    released: stable
+
+
+  escape 转义
+
+  # escape=\ (backslash)  or # escape=` (backtick)
+
+
+
+  Environment replacement- ENV
+    1）Environment variables (declared with the ENV statement)
+    can also be used in certain instructions as variables to be interpreted by the Dockerfile
+    环境变量的定义
+    2）$variable_name or ${variable_name}  使用方式
+    3）${variable_name} syntax also supports a few of the standard bash modifiers
+    4）转义  \$
+    5)Environment variables are supported by the following list of instructions in the Dockerfile:
+
+    ADD
+    COPY
+    ENV
+    EXPOSE
+    FROM
+    LABEL
+    STOPSIGNAL
+    USER
+    VOLUME
+    WORKDIR
+
+   例子：
+      ENV abc=hello
+      ENV abc=bye def=$abc
+      ENV ghi=$abc
+
+  .dockerignore file  排除文件
+
+
+
+  FROM指令
+     FROM <image> [AS <name>]  Or  FROM <image>[:<tag>] [AS <name>] Or FROM <image>[@<digest>] [AS <name>]
+
+     1）ARG is the only instruction that may precede FROM in the Dockerfile  参数定义
+     2）FROM can appear multiple times within a single Dockerfile to create multiple images
+               or use one build stage as a dependency for another
+     3）可选new build stage by adding AS name to the FROM instruction
+     4）可选the tag or digest values are optional. If you omit either of them, the builder assumes a latest tag by default
+     5）先声明后使用
+       ARG VERSION=latest
+       FROM busybox:$VERSION
+       ARG VERSION
+       RUN echo $VERSION > image_version
+
+  RUN 指令
+   1）RUN <command> (shell form, the command is run in a shell, which by default is /bin/sh -c on Linux or cmd /S /C on Windows)
+   2）RUN ["executable", "param1", "param2"] (exec form)
+
+
+  CMD
+   1）CMD ["executable","param1","param2"] (exec form, this is the preferred form)
+   2）CMD ["param1","param2"] (as default parameters to ENTRYPOINT)
+   3）CMD command param1 param2 (shell form)
+    There can only be one CMD instruction in a Dockerfile. If you list more than one CMD then only the last CMD will take effect
+    RUN 和 CMD的不同是 RUN可以又多次使用  CMD只能有一次
+
+ LABEL
+   LABEL <key>=<value> <key>=<value> <key>=<value> ...
+
+ MAINTAINER (deprecated)  不推荐使用 可以使用LABEL
+
+
+ ADD
+  ADD [--chown=<user>:<group>] <src>... <dest>
+  ADD [--chown=<user>:<group>] ["<src>",... "<dest>"] (this form is required for paths containing whitespace)
+  The ADD instruction copies new files, directories or remote file URLs
+  from <src> and adds them to the filesystem of the image at the path <dest>
+
+ COPY
+ COPY [--chown=<user>:<group>] <src>... <dest>
+ COPY [--chown=<user>:<group>] ["<src>",... "<dest>"] (this form is required for paths containing whitespace)
+ The COPY instruction copies new files or directories from <src> and adds them to the filesystem of the container at the path <dest>.
+
+ ENTRYPOINT 入口点
+   ENTRYPOINT ["executable", "param1", "param2"] (exec form, preferred)
+   ENTRYPOINT command param1 param2 (shell form)
+   配置容器启动后执行的命令，并且不可被 docker run 提供的参数覆盖。
+
+   每个 Dockerfile 中只能有一个 ENTRYPOINT，当指定多个时，只有最后一个起效
+
+   Dockerfile中的ENTRYPOINT指令和CMD指令都可以设置容器启动时要执行的命令，但用途是有略微不同的。
+
+   ENTRYPOINT指令和CMD指令虽然是在Dockerfile中定义，但是在构建镜像的时候并不会被执行，只有在执行docker run命令启动容器时才会起作用。
+
+   在Dockerfile中，只能有一个ENTRYPOINT指令，如果有多个ENTRYPOINT指令则以最后一个为准。
+
+   在Dockerfile中，只能有一个CMD指令，如果有多个CMD指令则以最后一个为准。
+
+   在Dockerfile中，ENTRYPOINT指令或CMD指令，至少必有其一。
+
+ VOLUME
+   格式为 VOLUME ["/data"]。
+
+   创建一个可以从本地主机或其他容器挂载的挂载点，一般用来存放数据库和需要保持的数据等
+
+ USER
+
+ USER <user>[:<group>] or
+ USER <UID>[:<GID>]。
+
+ 指定运行容器时的用户名或 UID，后续的 RUN 也会使用指定用户。
+
+ 当服务不需要管理员权限时，可以通过该命令指定运行用户。并且可以在之前创建所需要的用户，
+ 例如：RUN groupadd -r postgres && useradd -r -g postgres postgres。要临时获取管理员权限可以使用 gosu，而不推荐 sudo。
+
+
+ WORKDIR
+ WORKDIR /path/to/workdir
+
+ 为后续的 RUN、CMD、ENTRYPOINT 指令配置工作目录。
+
+ 可以使用多个 WORKDIR 指令，后续命令如果参数是相对路径，则会基于之前命令指定的路径。例如
+
+ WORKDIR /a
+
+ WORKDIR b
+
+ WORKDIR c
+
+ RUN pwd
+
+ 则最终路径为 /a/b/c。
+
+
+ ONBUILD
+
+ 格式为 ONBUILD [INSTRUCTION]。
+
+ 配置当所创建的镜像作为其它新创建镜像的基础镜像时，所执行的操作指令。
+
+ 例如，Dockerfile 使用如下的内容创建了镜像 image-A。
+
+ [...]
+
+ ONBUILD ADD . /app/src
+
+ ONBUILD RUN /usr/local/bin/python-build --dir /app/src
+
+ [...]
+
+ 如果基于 image-A 创建新的镜像时，新的Dockerfile中使用 FROM image-A指定基础镜像时，会自动执行 ONBUILD 指令内容，等价于在后面添加了两条指令。
+
+ FROM image-A #Automatically run the followingADD . /app/srcRUN /usr/local/bin/python-build --dir /app/src
+
+ 使用 ONBUILD 指令的镜像，推荐在标签中注明，例如 ruby:1.9-onbuild。
+
+
+
+
+
+ docker 可视化
+ docker pull portainer/portainer
+
+ docker run -d -p 9000:9000  --restart=always  -v /var/run/docker.sock:/var/run/docker.sock --name prtainer portainer/portainer
+     三、访问portainer服务
+
+     打开浏览器，输入服务器的IP或域名+端口号（9000）
+
+
+
+
+
+
+
+

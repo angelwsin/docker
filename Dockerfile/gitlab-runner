@@ -1,0 +1,60 @@
+https://www.jianshu.com/p/2b43151fb92e
+
+
+
+
+  gitlab-->gitlab-ci--->runner....(n多机器)
+
+
+  gitlab下的runner菜单下
+  a)注册
+  GitLab-CI会为这个Runner生成一个唯一的token，以后Runner就通过这个token与GitLab-CI进行通信
+
+  Runner的信息是存放在一个配置文件里面的，配置文件的格式一般是.toml。这个配置文件的存放位置有以下几种情况：
+
+  在类Unix操作系统下（0.5.0之后版本）
+
+
+  如果是以root用户身份运行gitlab-ci-multi-runner register，那么配置文件默认是/etc/gitlab-runner/config.toml
+
+  如果是以非root用户身份运行gitlab-ci-multi-runner register，那么配置文件默认是~/.gitlab-runner/config.toml
+
+  在其他操作系统下以及0.5.0之前版本
+  配置文件默认在当前工作目录下./config.toml
+
+
+
+
+  runner 配置使用TOML format.
+
+
+
+
+  CI/CD pipelines 项目根路径中添加文件.gitlab-ci.yml
+  Pipelines are the top-level component of continuous integration, delivery, and deployment.
+
+  Pipelines comprise:
+
+  Jobs that define what to run. For example, code compilation or test runs.
+  Stages that define when and how to run. For example, that tests run only after code compilation.
+  Multiple jobs in the same stage are executed by Runners in parallel, if there are enough concurrent Runners.
+
+  If all the jobs in a stage:
+
+  Succeed, the pipeline moves on to the next stage.
+  Fail, the next stage is not (usually) executed and the pipeline ends early.
+
+
+
+  Triggering pipelines through the API
+  触发器可用于通过API调用强制管道重新运行特定ref（分支或标记）。
+
+
+
+   pull or merge -->Trigger---->pipelines
+
+
+
+  https://segmentfault.com/a/1190000006120164
+
+
