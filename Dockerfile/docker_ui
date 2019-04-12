@@ -1,0 +1,82 @@
+Shipyard
+
+
+Shipyard是一个集成管理docker容器、镜像、Registries的系统，它具有以下特点：
+1.支持多节点的集成管理
+2.可动态加载节点
+3.可托管node下的容器
+镜像环境准备
+
+# docker pull rethinkdb
+# docker pull microbox/etcd
+# docker pull shipyard/docker-proxy
+# docker pull swarm
+# docker pull shipyard/shipyard
+手动安装（以本地ip：10.211.55.20为例）
+1. 数据存储（rethinkdb）
+
+1
+docker run -ti -d --name shipyard-rethinkdb rethinkdb
+2.服务发现（etcd）
+
+为了启用Swarm leader选择，我们必须使用来自Swarm容器的外部键值存储。此处，我们使用Etcd作为服务发现工具。可以选用的服务发现工具还有Consul、Zookeeper等。
+
+1
+docker run -ti -d -p 4001:4001 -p 7001:7001 --name shipyard-discovery microbox/etcd -name discovery
+3. Docker代理服务（shipyard/docker-proxy）
+
+默认情况下，Docker引擎只侦听套接字。 我们可以重新配置引擎以使用TLS，或者您可以使用代理容器。 这是一个非常轻量级的容器，它只是将请求从TCP转发到Docker监听的Unix套接字。
+
+1
+docker run  -ti -d -p 2375:2375 --hostname=$HOSTNAME --name shipyard-proxy -v /var/run/docker.sock:/var/run/docker.sock -e PORT=2375 shipyard/docker-proxy
+4.Swarm管理节点（swarm manager）
+
+将IP-OF-HOST替换为对应的ip;
+将SWARM-INNER-PORT换成对应的端口，默认2375.
+将SWARM-MAP-PORT换成映射到host机的ip，例如2376
+1
+格式：docker run -ti -d --name -p [SWARM-MAP-PORT]:[SWARM-INNER-PORT] shipyard-swarm-manager docker.io/swarm manage --host tcp://0.0.0.0:[SWARM-INNER-PORT] etcd://[IP-OF-HOST]:4001
+docker run  -ti -d --name shipyard-swarm-manager swarm manage --host tcp://0.0.0.0:3375 etcd://localhost:4001
+5.Swarm Agent节点将当前docker节点加入到集群中
+
+将IP-OF-HOST替换为对应的ip
+将IP-OF-ETCD-HOST换成etcd所在的docker节点ip。
+将LOCAL-DOCKER-PORT换成本机docker所监听的端口，例如2375
+
+格式：docker run -ti -d --name shipyard-swarm-agent docker.io/swarm join --addr [IP-OF-HOST]:[LOCAL-DOCKER-PORT] etcd://[IP-OF-ETCD-HOST]:4001
+
+docker run -ti -d --name shipyard-swarm-agent swarm join --addr localhost:2375 etcd://localhost:4001
+6.启动Shipyard管理工具
+
+docker run -ti -d --name shipyard-controller --link shipyard-rethinkdb:rethinkdb --link shipyard-swarm-manager:swarm -p 8083:8080 shipyard/shipyard server -d tcp://swarm:3375
+7.浏览器访问：http://192.168.2.123:8083/ 即可进入链接
+
+默认用户名/密码 admin/shipyard
+
+防火墙需打开4001端口，否则防火墙会拦住容器。
+
+
+
+Nginx做域名转发
+在nginx配置文件http块里添加如下代码
+upstream shipyard {
+     server 192.168.1.108:8083;
+}
+server {
+    listen          80;
+    server_name     mm.shipyard.com;
+
+    location / {
+        proxy_pass http://shipyard;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+　以下三行代码为nginx做WebSockets跳转否则，在执行shell时会报400错误
+
+
+proxy_http_version 1.1;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+　

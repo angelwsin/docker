@@ -1,0 +1,23 @@
+
+docker 架构
+
+
+
+
+
+   Stack       A stack is a group of interrelated services that share dependencies, and can be orchestrated and scaled together
+               应用栈stack是一组相互关联的服务，它们共享依赖关系，并且可以协调和缩放在一起
+   Services   分布式部署的服务层 涉及到负载均衡等 docker-compose.yml 定义  可以扩展
+              cluster by a swarm manager 集群的话使用swarm管理，The machines in a swarm can be physical or virtual 被称为node
+   Container  单一容器层
+
+
+
+   $ docker ps // 查看所有正在运行容器
+   $ docker stop containerId // containerId 是容器的ID
+
+   $ docker ps -a // 查看所有容器
+   $ docker ps -a -q // 查看所有容器ID
+
+   $ docker stop $(docker ps -a -q) //  stop停止所有容器
+   $ docker  rm $(docker ps -a -q) //   remove删除所有容器
