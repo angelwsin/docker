@@ -115,5 +115,12 @@ ${nums[@]}
 
 
 
+shell 交互使用 expect的包
+
+查看安装 rpm -qa | grep expect
+
+
+
+
 
 

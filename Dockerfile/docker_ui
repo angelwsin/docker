@@ -79,4 +79,11 @@ server {
 proxy_http_version 1.1;
 proxy_set_header Upgrade $http_upgrade;
 proxy_set_header Connection "upgrade";
+
+
+1)docker pull portainer/portainer
+
+docker run -d -p 9000:9000 --restart=always  -v /var/run/docker.sock:/var/run/docker.sock  --name prtainer portainer/portainer
+
+
 　

@@ -1,1 +1,2 @@
-FROM gitlab/gitlab-ce:latest
+Gitlab的所有API都需要提供private_token参数进行用户身份认证（除了用来获得private_token的接口本身）
+curl  http://gitlab/api/v4/projects?private_token=NUg_BcNkeG_dpomY85hF

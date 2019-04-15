@@ -21,3 +21,22 @@ docker 架构
 
    $ docker stop $(docker ps -a -q) //  stop停止所有容器
    $ docker  rm $(docker ps -a -q) //   remove删除所有容器
+
+
+   docker run --name bind -d --restart=always  --publish 53:53/tcp --publish 53:53/udp --publish 10000:10000/tcp sameersbn/bind:latest
+
+
+   docker run  --name dnsmasq  -d -p 53:53/udp  -p 8080:8080    --log-opt "max-size=100m"  -e "HTTP_USER=admin"  -e "HTTP_PASS=admin" --restart always jpillora/dnsmasq
+
+docker exec -it bind bash
+
+DNS配置
+* 在/etc/resolv.conf
+
+
+echo "nameserver 172.17.0.8"  > /etc/resolv.conf
+
+
+
+
+

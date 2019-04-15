@@ -5,3 +5,11 @@ ssh-keygen 生成秘钥
 
 
 公钥送到远程主机 ssh-copy-id user@host
+
+echo "JAVA_HOME=/home/apache-maven-3.6.0/bin" >> build.sh
+echo "MAVEN_HOME=/home/apache-maven-3.6.0/bin" >> build.sh
+
+echo "$MAVEN_HOME build"
+
+
+
